@@ -6,27 +6,20 @@ Exec {
 }
 
 include nginx
+include app_postgresql
 
-
-class { 'postgresql::server':
-   config_hash => {
-       'ip_mask_allow_all_users'    => '127.0.0.1/0',
-       'listen_addresses'           => '*',
-       'manage_redhat_firewall' => true,
-       'postgres_password'          => 'postgres',
-       'ip_mask_deny_postgres_user' => '192.169.9.999'
-   }
+user {
+  "apies":
+  name => 'apies',
+  password => '$1$rFs0IBL/$uacksiHX7loGJx4Day0mq.',
+  ensure  => "present",
+  managehome => true,
+  roles => admin
 }
 
-#  postgresql::db { 'mydb':
-#    user     => 'my_user',
-#    password => 'password',
-#    grant    => 'all'
-#  }
 
 
 
-postgresql::database_user {
-  'apies':
-    password_hash => '$1$zzVHWC1w$BZz0T4XLK5JRw0QDN97GW1'
-}
+
+
+
