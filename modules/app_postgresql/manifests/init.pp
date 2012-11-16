@@ -2,7 +2,7 @@ class app_postgresql {
   
   class { 'postgresql::server':
      config_hash => {
-         'ip_mask_allow_all_users'    => '127.0.0.1/0',
+         'ip_mask_allow_all_users'    => '0.0.0.0/0',
          'listen_addresses'           => '*',
          'manage_redhat_firewall' => true,
          'postgres_password'          => 'postgres',
