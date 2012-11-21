@@ -5,9 +5,11 @@ Exec {
 }
 
 #todo add a remove the sites-enabled/default
+
 include nginx
 include app_postgresql
 include mongodqb
+include mongodb
 
 user {
   "apies":
