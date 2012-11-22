@@ -1,58 +1,59 @@
 class mongodb {
 
-    #$add-key = "/usr/bin/apt-key adv --keyserver keyserver.ubuntu.com --recv 7F0CEB10"
-    #$mongodb-repo = "deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen"
+    #1
+    package { "python-software-properties":
+        ensure => installed,
+        #require => Exec["10gen-repo"]
+    }
 
-    Exec { require => Package["python-software-properties"] }
-
+    #2
     exec { "add-10gen-key":
         command => "/usr/bin/apt-key adv --keyserver keyserver.ubuntu.com --recv 7F0CEB10",
-        onlyif => "/usr/bin/apt-key list | /usr/bin/awk '$0 ~ /10gen/ { exit 1 }' /etc/apt/sources.list"
+        require => Package["python-software-properties"]
     }
 
-    exec { "10gen-repo" :
-        command => "/usr/bin/add-apt-repository deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen",
-        require => Exec["add-10gen-key"],
-        onlyif => "/usr/bin/awk '$0 ~ /10gen/ { exit 1 }' /etc/apt/sources.list"
-    }
-
-    #$required-execs = [ "10gen-repo" ]
-
-    exec { "mongodb-apt-ready" :
-        command => "/usr/bin/apt-get update",
-        #require => Exec[$required-execs],
-        onlyif => "/usr/bin/test ! -x /usr/bin/mongo"
-    }
-
-    package { [ "mongodb-10gen" ] :
-        ensure => "installed",
-        require => Exec["mongodb-apt-ready"]
-    }
-
-    service { "mongodb":
-        ensure => "running",
-        enable => "true",
-        require => Package["mongodb-10gen"]
-    }
-
-    file {
-        "/etc/mongodb.conf":
-          source => "puppet:///modules/mongodb/mongodb.conf",
-          mode => 644,
-          owner => root,
-          group => root,
-          notify => Service["mongodb"],
-          require => Package["mongodb-10gen"]
-    }
-
+    #3
     file {
         "/etc/apt/sources.list.d/10gen.list":
           source => "puppet:///modules/mongodb/10gen.list",
           mode => 644,
           owner => root,
           group => root,
-          notify => Service["mongodb"],
-          require => Package["mongodb-10gen"]
+          require => Exec["add-10gen-key"]
     }
+
+    #5
+    exec { "mongodb-apt-ready" :
+        command => "/usr/bin/apt-get update",
+        #require => Exec[$required-execs],
+        onlyif => "/usr/bin/test ! -x /usr/bin/mongo",
+        require => File["/etc/apt/sources.list.d/10gen.list"]
+    }
+
+    #6
+    package { "mongodb-10gen":
+        ensure => "installed",
+        require => Exec["mongodb-apt-ready"]
+    }
+
+    #7
+    service { "mongodb":
+        ensure => "running",
+        enable => "true",
+        require => Package["mongodb-10gen"]
+    }
+
+    #will need later
+    #file {
+    #    "/etc/mongodb.conf":
+    #      source => "puppet:///modules/mongodb/mongodb.conf",
+    #      mode => 644,
+    #      owner => root,
+    #      group => root,
+    #      notify => Service["mongodb"],
+    #      require => Package["mongodb-10gen"]
+    #}
+
+
 
 }
